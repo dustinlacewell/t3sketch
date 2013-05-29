@@ -1,0 +1,29 @@
+#
+# project file
+#
+
+-D "LANGUAGE=en_us" 
+-D "MESSAGESTYLE=neu" 
+-D TADS_INCLUDE_NET
+
+-Fy "obj" 
+-Fo "obj"
+
+# image file
+-o build/thespace.t3
+
+-v
+-a 
+-statprefix <@> 
+-statpct 
+
+-I /usr/local/share/frobtads/tads3/lib/
+
+-lib system
+-lib webui
+-source tadsnet
+-lib adv3/adv3web
+
+# source files
+-source "src/main"
+
