@@ -26,4 +26,6 @@
 
 # source files
 -source "src/main"
-
+-source "src/utils"
+-source "src/office/room"
+-source "src/office/chair"

@@ -29,13 +29,6 @@ me: Actor {
     posture = 'sitting'
 }
 
-office: Room 'Office' {
-    desc = "<p><<one of>>You swivel away from the window and your mind returns to the office.<<or>>You survey the office.<<stopping>> Its a small unfurnished room.";
-}
-
-+ officeChair: BasicChair {
-    vocabWords = 'chair'
-    weakTokens = 'office'
-    name = 'office chair'
-    desc = "Its a small office chair with four wheels and seat the swivels.";
+northFloor: Room 'North floor' {
+    desc = "The massive workshop floor";
 }
