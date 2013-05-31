@@ -1,8 +1,33 @@
+#charset "us-ascii"
+#include <adv3.h>
+#include <en_us.h>
+
+choice (cond, first, second) {
+    if (cond)
+        "<<first>>";
+    else
+        "<<second>>";
+}
+
 isSitting (obj) {
-    return obj.posture == 'sitting';
+    if (obj.posture == sitting)
+        return true;
 }
 
 isStanding (obj) {
-    return obj.posture == 'standing';
+    if (obj.posture == standing)
+        return true;
 }
 
+isBroken(obj) {
+    if (obj.ofKind(Breakable))
+        return obj.broken;
+}
+
+class Breakable: object {
+    broken = nil
+
+    breakObj() {
+        broken = true;
+    }
+}

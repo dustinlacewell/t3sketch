@@ -2,14 +2,22 @@
 #include <adv3.h>
 #include <en_us.h>
 
-officeChair: BasicChair {
+officeChair: Breakable, BasicChair {
     location = office
 
     name = 'office chair'
     vocabWords = 'chair'
     weakTokens = 'office'
+    broken = nil
 
-    desc = "<<if isSitting(me)>>It's a bit hard to examine while sitting on it.<<else>>Its a small office chair with four wheels and seat the swivels.<<end>>";
+    desc() {
+        choice(
+            isSitting(gActor),
+            'It\'s a bit hard to examine while sitting on it.',
+            'It\'s a small office chair with four wheels and a seat <<if broken>>that used to swivel.<<else>>the swivels.<<end>>'
+        );
+    }
+
     initSpecialDesc = "";
 }
 
@@ -25,7 +33,17 @@ SwivelAction: IAction {
         {: mainReport('The chair refuses to swivel.') }
     ]}
 
-    execAction() { events.doScript(); }
+    execAction() { 
+        if (isSitting(gActor)) {
+            events.doScript(); 
+            if (gActor.location.broken == nil) {
+                if (events.curScriptState == events.eventListLen)
+                    gActor.location.broken = true;
+            }
+        } else {
+            "You uselessly shake your hips.";
+        }
+    }
 }
 
 VerbRule(Swivel)

@@ -26,7 +26,7 @@ gameMain: GameMainDef {
 
 me: Actor {
     location = officeChair
-    posture = 'sitting'
+    posture = sitting
 }
 
 northFloor: Room 'North floor' {
