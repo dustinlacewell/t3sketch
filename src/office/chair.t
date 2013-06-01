@@ -2,11 +2,7 @@
 #include <adv3.h>
 #include <en_us.h>
 
-officeChair: Breakable, BasicChair {
-    location = office
-
-    name = 'office chair'
-    vocabWords = 'chair'
+officeChair: Breakable, BasicChair 'chair' 'office chair' @office
     weakTokens = 'office'
     broken = nil
 
@@ -19,9 +15,9 @@ officeChair: Breakable, BasicChair {
     }
 
     initSpecialDesc = "";
-}
+;
 
-SwivelAction: IAction {
+SwivelAction: IAction 
 
     events: StopEventList {[
         {: mainReport('The chair squeeks. Whee!') },
@@ -44,10 +40,10 @@ SwivelAction: IAction {
             "You uselessly shake your hips.";
         }
     }
-}
+;
 
 VerbRule(Swivel)
-    'swivel'
+    'swivel' | 'spin'
     : SwivelAction
     verbPhrase = 'swivel/swiveling'
 ;
