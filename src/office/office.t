@@ -17,13 +17,13 @@ office: Room 'Office'
             burning ciggarette in your hand into a tray resting there. A
             large calendar takes up most of the north wall save for a filing
             cabinet in the corner. You notice the wastebin at your feet needs
-            changing.</p>'
+            changing.</p>',
 
             '<p>You survey the office. 
             <<if isSitting(gActor)>>You sit <<else>>You stand<<end>>
             before a desk as wide as the room snugged against the back wall.
             A calendar and filing-cabinet occupy the north wall while a large
-            window provides a view onto the workshop floor.</p>',
+            window provides a view onto the workshop floor.</p>'
         );
     }
 ;
