@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import os, fnmatch
-from subprocess import check_output, CalledProcessError
+import os, fnmatch, sys
+from subprocess import check_output, CalledProcessError, call
 from argparse import ArgumentParser
 from jinja2 import Environment
 
@@ -76,7 +76,6 @@ def render_template(info, sources):
     makefile = filename + '.make' 
     with open(makefile, 'w') as fobj:
         fobj.write(result)
-
     return makefile, gamefile
 
 def find_version_info():
@@ -128,12 +127,17 @@ def build_makefile(makefile):
 
 
 def run_gamefile(gamefile):
-    retval = check_output(' frob -i plain -k utf8 -N 44 build/%s' % gamefile)
+    try:
+        retval = call(('frob -i plain -k utf8 -N 44 bin/%s' % gamefile).split())
+    except KeyboardInterrupt:
+        pass        
 
 if "__main__" == __name__:
     makefile, gamefile = render_makefile()
     if args.b:
+        print "Building makefile `%s`" % makefile
         build_makefile(makefile)
 
     if args.r:
+        print "Running gamefile `bin/%s`" % gamefile
         run_gamefile(gamefile)
