@@ -7,10 +7,11 @@ from jinja2 import Environment
 BUILDPREFIX = './obj'
 
 def get_parser():
-    parser = ArgumentParser(description='Build a TADS 3 story', add_help=False)
+    parser = ArgumentParser(description='Build a TADS 3 story')
     parser.add_argument('sourcedir', help='path containing tads3 code')
     parser.add_argument('-b', help='build gamefile', action='store_true')
-    parser.add_argument('-h', help='host gamefile', action='store_true')
+    parser.add_argument('-a', help='rebuild all objects', action='store_true')
+    parser.add_argument('-w', help='host gamefile in browser', action='store_true')
     parser.add_argument('-r', help='run gamefile', action='store_true')
     parser.add_argument('-d', help='debug mode', action='store_true')
     parser.add_argument('-u', help='upload gamefile', action='store_true')
@@ -79,7 +80,7 @@ def render_template(info, sources, html=False, debug=False):
     filename = filename.lower()
 
     if html:
-        filename = filename + '.html'
+        filename = filename + '_html'
 
     gamefile = filename + '.t3'
 
@@ -132,9 +133,12 @@ def render_makefile(info, html=False, debug=False):
     sources = get_sources()
     return render_template(info, sources, html=html, debug=debug)
 
-def build_makefile(makefile):
+def build_makefile(makefile, all=False):
+    a = ''
+    if all:
+        a = '-a'
     try: 
-        retval = check_output("t3make -f %s" % makefile, shell=True)
+        retval = check_output("t3make %s -f %s" % (a, makefile), shell=True)
     except CalledProcessError as e:
 
         def filter_output(output):
@@ -172,9 +176,9 @@ if "__main__" == __name__:
 
     if args.b:
         print "Building makefile `%s`" % makefile
-        build_makefile(makefile)
+        build_makefile(makefile, all=args.a)
         print "Building html makefile `%s`" % html_makefile
-        build_makefile(html_makefile)
+        build_makefile(html_makefile, all=args.a)
 
     if args.r:
         print "Running gamefile `bin/%s`" % gamefile
@@ -187,6 +191,6 @@ if "__main__" == __name__:
         print "Uploading html gamefile `bin/%s`" % html_gamefile
         upload_gamefile(html_gamefile)
 
-    if args.h:
+    if args.w:
         print "Hosting gamefile `bin/%s`" % html_gamefile
         host_gamefile(html_gamefile)        

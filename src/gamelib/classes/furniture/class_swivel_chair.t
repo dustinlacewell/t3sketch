@@ -4,11 +4,10 @@
 
 class SwivelChair: Swivelable, Chair
     desc() {
-        choice(
-            isSitting(gActor),
-            {: "It's a bit hard to examine while sitting on it." },
-            {: "It's a small chair with four wheels and a seat that swivels." }
-        );
+        if (isSitting(gActor))
+            "It's a bit hard to examine while sitting on it.";
+        else
+            "It's a small chair with four wheels and a seat that swivels.";
     }
 
     swivelEvents: StopEventList {[
@@ -18,11 +17,10 @@ class SwivelChair: Swivelable, Chair
 
 class BreakableSwivelChair: Breakable, SwivelChair
     desc() {
-        choice(
-            isSitting(gActor),
-            {: "It's a bit hard to examine while sitting on it." },
-            {: "It's a small office chair with four wheels and a seat <<if isBroken(self)>>that used to swivel.<<else>>that swivels.<<end>>" }
-        );
+        if (isSitting(gActor))
+            "It's a bit hard to examine while sitting on it.";
+        else
+            "It's a small office chair with four wheels and a seat <<if isBroken(self)>>that used to swivel.<<else>>that swivels.<<end>>";
     }
 
     swivelEvents: StopEventList {[

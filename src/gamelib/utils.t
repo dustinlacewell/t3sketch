@@ -2,12 +2,43 @@
 #include <adv3.h>
 #include <en_us.h>
 
-choice (cond, first, second) {
-    if (cond)
-        first();
-    else
-        second();
-}
+class Chooser: OneOfIndexGen
+    construct(type, [elements]) {
+        listAttrs = type;
+        numItems = elements.length();
+        items = elements;
+    }
+
+    next() {
+        local f = items[self.getNextIndex()];
+        return f();
+    }
+;
+
+class randChooser: Chooser 
+    construct([elements]) {
+        inherited('rand', elements...);
+    }
+;    
+
+class shufChooser: Chooser 
+    construct([elements]) {
+        inherited('shuffle2', elements...);
+    }
+;    
+
+class stopChooser: Chooser 
+    construct([elements]) {
+        inherited('seq,stop', elements...);
+    }
+;    
+
+class cycleChooser: Chooser 
+    construct([elements]) {
+        inherited('seq', elements...);
+    }
+;
+
 
 isSitting (obj) {
     if (obj.posture == sitting)
