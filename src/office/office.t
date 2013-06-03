@@ -7,7 +7,7 @@ office: Room 'Office'
     desc() {
         choice(
             !self.seen,
-            '<p>You swivel away from the window and the single naked bulb
+            {: "<p>You swivel away from the window and the single naked bulb
             hanging overhead flickers as your mind returns to the office.
             Its a small unfurnished room where you store paperwork and
             organize promotions. Mostly this is where you come when you
@@ -17,15 +17,21 @@ office: Room 'Office'
             burning ciggarette in your hand into a tray resting there. A
             large calendar takes up most of the north wall save for a filing
             cabinet in the corner. You notice the wastebin at your feet needs
-            changing.</p>',
+            changing.</p>" },
 
-            '<p>You survey the office. 
+            {: "<p>You survey the office. 
             <<if isSitting(gActor)>>You sit <<else>>You stand<<end>>
             before a desk as wide as the room snugged against the back wall.
             A calendar and filing-cabinet occupy the north wall while a large
-            window provides a view onto the workshop floor.</p>'
+            window provides a view onto the workshop floor.</p>" }
         );
     }
+
+    south = officeDoorInside
+    out asExit(south)
+;
+
++ officeDoorInside : ScreenDoor 'office door' 'office screen door'
 ;
 
 + officeWindow : SenseConnector, Fixture 'window' 'dusty window'
@@ -52,3 +58,9 @@ office: Room 'Office'
         }
     }   
 ;
+
+officeChair: BreakableSwivelChair 'chair' 'office chair' @office
+    weakTokens = ['office', 'swivel']
+    initSpecialDesc = "";
+;
+

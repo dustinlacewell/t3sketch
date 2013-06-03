@@ -4,11 +4,16 @@ from subprocess import check_output, CalledProcessError, call
 from argparse import ArgumentParser
 from jinja2 import Environment
 
+BUILDPREFIX = './obj'
+
 def get_parser():
-    parser = ArgumentParser(description='Build a TADS 3 story')
+    parser = ArgumentParser(description='Build a TADS 3 story', add_help=False)
     parser.add_argument('sourcedir', help='path containing tads3 code')
     parser.add_argument('-b', help='build gamefile', action='store_true')
+    parser.add_argument('-h', help='host gamefile', action='store_true')
     parser.add_argument('-r', help='run gamefile', action='store_true')
+    parser.add_argument('-d', help='debug mode', action='store_true')
+    parser.add_argument('-u', help='upload gamefile', action='store_true')
     return parser
 
 parser = get_parser()
@@ -21,27 +26,38 @@ def get_template():
 # {{ game_author }}
 # {{ game_desc }}
 
+{% if debug_mode %}
+-d
+{% endif %}
+
 -D "LANGUAGE=en_us" 
 -D "MESSAGESTYLE=neu" 
--D TADS_INCLUDE_NET
 
--Fy "obj" 
--Fo "obj"
+{% if html %}
+-D TADS_INCLUDE_NET
+{% endif %}
+
+-FC
+-Fy "{% if html %}htmlobj{% else %}obj{% endif %}" 
+-Fo "{% if html %}htmlobj{% else %}obj{% endif %}" 
 
 # image file
 -o bin/{{ gamefile }}
 
 -v
--a 
 -statprefix <@> 
 -statpct 
 
 -I /usr/local/share/frobtads/tads3/lib/
 
 -lib system
+{% if html %}
 -lib webui
 -source tadsnet
 -lib adv3/adv3web
+{% else %}
+-lib adv3/adv3
+{% endif %}
 
 # source files
 {% for file in sources %}
@@ -57,10 +73,13 @@ def get_sources():
           matches.append(os.path.join(root, filename))    
     return matches
 
-def render_template(info, sources):
+def render_template(info, sources, html=False, debug=False):
     filename = info.get('name', 'game')
     filename = filename.replace(' ', '_')
     filename = filename.lower()
+
+    if html:
+        filename = filename + '.html'
 
     gamefile = filename + '.t3'
 
@@ -71,6 +90,8 @@ def render_template(info, sources):
         'game_author': info.get('byline', ''),
         'game_desc': info.get('desc', ''),
         'sources': sources,
+        'html': html,
+        'debug_mode': debug,
     })
 
     makefile = filename + '.make' 
@@ -107,10 +128,9 @@ def find_version_info():
                 lineno += 1
     return version_info
 
-def render_makefile():
-    info = find_version_info()
+def render_makefile(info, html=False, debug=False):
     sources = get_sources()
-    return render_template(info, sources)
+    return render_template(info, sources, html=html, debug=debug)
 
 def build_makefile(makefile):
     try: 
@@ -126,18 +146,47 @@ def build_makefile(makefile):
         print filter_output(e.output)
 
 
-def run_gamefile(gamefile):
+def host_gamefile(gamefile):
     try:
         retval = call(('frob -i plain -k utf8 -N 44 bin/%s' % gamefile).split())
     except KeyboardInterrupt:
         pass        
 
+def run_gamefile(gamefile):
+    try:
+        retval = call(('frob -k utf8 bin/%s' % gamefile).split())
+    except KeyboardInterrupt:
+        pass        
+
+def upload_gamefile(gamefile):
+    try:
+        retval = call(('scp bin/%s root@ldlework.com:/var/txweb/ldlework.com/' % gamefile).split())
+    except CalledProcessError as e:
+        print e.output
+
 if "__main__" == __name__:
-    makefile, gamefile = render_makefile()
+    info = find_version_info()
+
+    makefile, gamefile = render_makefile(info, debug=args.d, html=False)
+    html_makefile, html_gamefile = render_makefile(info, debug=args.d, html=True)
+
     if args.b:
         print "Building makefile `%s`" % makefile
         build_makefile(makefile)
+        print "Building html makefile `%s`" % html_makefile
+        build_makefile(html_makefile)
 
     if args.r:
         print "Running gamefile `bin/%s`" % gamefile
         run_gamefile(gamefile)
+
+    if args.u:
+        print "Uploading gamefile `bin/%s`" % gamefile
+        upload_gamefile(gamefile)
+
+        print "Uploading html gamefile `bin/%s`" % html_gamefile
+        upload_gamefile(html_gamefile)
+
+    if args.h:
+        print "Hosting gamefile `bin/%s`" % html_gamefile
+        host_gamefile(html_gamefile)        

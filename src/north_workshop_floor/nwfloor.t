@@ -11,4 +11,12 @@ NorthWorkshopFloor: Room 'North floor of the Workshop'
             'You see the workshop floor',
         );
     }
+
+    north = officeDoorOutside
 ;
+
+
++ officeDoorOutside: ScreenDoor 'office door' 'office door'
+    masterObject = officeDoorInside
+;
+

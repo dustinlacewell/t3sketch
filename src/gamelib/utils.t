@@ -4,9 +4,9 @@
 
 choice (cond, first, second) {
     if (cond)
-        "<<first>>";
+        first();
     else
-        "<<second>>";
+        second();
 }
 
 isSitting (obj) {
@@ -24,10 +24,9 @@ isBroken(obj) {
         return obj.broken;
 }
 
-class Breakable: object {
-    broken = nil
-
-    breakObj() {
-        broken = true;
-    }
-}
+#ifdef __DEBUG
+    #define debugCom(name, code) \
+        grammar debugCom : name : BasicProd execute() code
+#else
+    #define dbgCommand(name, code)
+#endif
