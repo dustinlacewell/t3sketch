@@ -95,7 +95,7 @@ def render_template(info, sources, html=False, debug=False):
         'debug_mode': debug,
     })
 
-    makefile = filename + '.make' 
+    makefile = filename + '.t3m' 
     with open(makefile, 'w') as fobj:
         fobj.write(result)
     return makefile, gamefile

@@ -1,0 +1,142 @@
+#!/usr/bin/env python
+import os, fnmatch, sys
+from subprocess import check_output, CalledProcessError, call
+from argparse import ArgumentParser
+from jinja2 import Environment
+
+FLIPS = {
+    'north': 'south',
+    'south': 'north',
+    'east': 'west',
+    'west': 'east',
+    'northeast': 'southwest',
+    'southwest': 'northeast',
+    'northwest': 'southeast',
+    'southeast': 'northwest',
+}
+
+def get_parser():
+    parser = ArgumentParser(description='Create a new room')
+    parser.add_argument('room_name', nargs="*", help='name of the new room')
+    parser.add_argument('-l', help='location of the new room')
+    parser.add_argument('-o', help='location of the source room')
+    parser.add_argument('-d', help='direction of the new room')
+    return parser
+
+parser = get_parser()
+args = parser.parse_args()
+
+def file_as_lines(filename):
+    with open(filename, 'r') as fobj:
+        lines = fobj.read().splitlines()
+    return lines
+
+def find_class(lines, cls):
+    start = None
+    for idx, line in enumerate(lines):
+        if str(line).strip():
+            parts = line.split()
+            if parts[0].endswith(':') and parts[0] == cls + ':':
+                start = idx
+            if start and line[:1] == ';':
+                return start, idx
+
+def insert_into_class(lines, cls, line):
+    retval = find_class(lines, cls)
+    if retval is not None:
+        start, end = retval
+        search = line.split()[0]
+        for i in range(start, end+1):
+            if lines[i].split() == search:
+                lines[i] = line
+                return
+        lines.insert(end, line)
+
+def insert_after_class(lines, cls, text):
+    retval = find_class(lines, cls)
+    if retval is not None:
+        start, end = retval
+        lines.insert(end + 1, text)
+
+def get_name_parts(room_name):
+    return room_name
+    parts = []
+    broken = room_name.split()
+    for piece in broken:
+        _parts = piece.split('-')
+        for part in _parts:
+            parts.append(part)
+    return parts
+
+def get_symbol_name(room_name):
+    parts = get_name_parts(room_name)
+    for idx, part in enumerate(parts):
+        if idx == 0:
+            parts[idx] = part.lower()
+        else:
+            parts[idx] = part.capitalize()
+    return ''.join(parts)
+
+def get_folder_name(room_name):
+    parts = get_name_parts(room_name)
+    return '-'.join([p.lower() for p in parts])
+
+def get_file_name(room_name):
+    parts = get_name_parts(room_name)
+    return ('_'.join([p.lower() for p in parts])) + '.t'
+
+def get_template(name):
+    with open('./src/templates/rooms/%s.tpl' % name, 'r') as fobj:
+        return Environment().from_string(fobj.read())
+
+def render_template(room_name, location, template):
+    template = get_template(template)
+    symbol_name = get_symbol_name(room_name)
+    if args.d:
+        door_dir = FLIPS[args.d]    
+    else:
+        door_dir = None
+    result = template.render({
+        'room_name': ' '.join([p.lower() for p in room_name]),
+        'symbol_name': symbol_name,
+        'door_direction': door_dir,
+    })
+
+    filename = get_file_name(room_name)
+    path = os.path.join(location, filename)
+
+    with open(path, 'w') as fobj:
+        fobj.write(result)
+
+def add_backreference(room_filename, other_room, direction):
+    filename = os.path.basename(room_filename).split('.')[0]
+    name_parts = filename.split('_')
+    room_name = get_symbol_name(name_parts)
+    other_name = get_symbol_name(other_room)
+    lines = file_as_lines(room_filename)    
+    insert_into_class(lines, room_name, "\n    %s = %sOutsideDoor" % (direction, other_name))
+    insert_after_class(lines, room_name, """
+
++ {room_name}OutsideDoor : Door 'door' 'door'
+    "Door description"
+    masterObject = {room_name}Door
+;
+    """.format(room_name=other_name))
+    with open(room_filename, 'w') as fobj:
+        fobj.write('\n'.join(lines))
+
+def add_room(room_name, location, template='default'):
+    folder_name = get_folder_name(room_name)
+    full_path = os.path.join(location, folder_name)
+    if os.path.isdir(full_path):
+        print "Room already exists at %s" % full_path
+    else:
+        try: os.mkdir(full_path)
+        except: print "Could not make path: %s" % full_path; exit()
+        render_template(room_name, full_path, template)
+
+    if args.o and args.d:
+        add_backreference(args.o, room_name, args.d)
+
+if "__main__" == __name__:
+    add_room(args.room_name, args.l)

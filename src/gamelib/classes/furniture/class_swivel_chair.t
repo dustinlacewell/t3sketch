@@ -28,7 +28,7 @@ class BreakableSwivelChair: Breakable, SwivelChair
         {: mainReport('The chair squeeks. Whee!') },
         {: mainReport('Whee!') },
         function() {
-            officeChair.breakObj();
+            breakObj();
             mainReport('The chair emits a dry groan. It turns with difficulty.');
         },
         {: mainReport('The chair refuses to swivel. Too much of a good thing you suppose.') },
