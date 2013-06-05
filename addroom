@@ -21,6 +21,7 @@ def get_parser():
     parser.add_argument('-l', help='location of the new room')
     parser.add_argument('-o', help='location of the source room')
     parser.add_argument('-d', help='direction of the new room')
+    parser.add_argument('-D', help='use door to connect new room', action='store_true')
     return parser
 
 parser = get_parser()
@@ -89,17 +90,26 @@ def get_template(name):
     with open('./src/templates/rooms/%s.tpl' % name, 'r') as fobj:
         return Environment().from_string(fobj.read())
 
-def render_template(room_name, location, template):
+def render_template(room_name, location, template, source_room):
     template = get_template(template)
     symbol_name = get_symbol_name(room_name)
     if args.d:
-        door_dir = FLIPS[args.d]    
+        dir = FLIPS[args.d]    
     else:
-        door_dir = None
+        dir = None
+
+    if args.D:
+        dir_type = 'door_direction'
+    elif args.o and args.d:
+        dir_type = 'exit_direction'
+    else:
+        dir_type = None
+
     result = template.render({
         'room_name': ' '.join([p.lower() for p in room_name]),
         'symbol_name': symbol_name,
-        'door_direction': door_dir,
+        dir_type: dir,
+        'source_room': source_room,
     })
 
     filename = get_file_name(room_name)
@@ -109,23 +119,34 @@ def render_template(room_name, location, template):
         fobj.write(result)
 
 def add_backreference(room_filename, other_room, direction):
-    filename = os.path.basename(room_filename).split('.')[0]
-    name_parts = filename.split('_')
-    room_name = get_symbol_name(name_parts)
+    room_name = get_source_room_name(room_filename)
     other_name = get_symbol_name(other_room)
     lines = file_as_lines(room_filename)    
-    insert_into_class(lines, room_name, "\n    %s = %sOutsideDoor" % (direction, other_name))
-    insert_after_class(lines, room_name, """
+    if args.D:
+        insert_into_class(lines, room_name, "\n    %s = %sOutsideDoor" % (direction, other_name))
+        insert_after_class(lines, room_name, """
 
-+ {room_name}OutsideDoor : Door 'door' 'door'
-    "Door description"
++ {room_name}OutsideDoor : Door '{direction} door' '{direction} door'
+    "Door description. "
     masterObject = {room_name}Door
 ;
-    """.format(room_name=other_name))
+        """.format(room_name=other_name, direction=direction))
+    else:
+        insert_into_class(lines, room_name, "\n    %s = %s" % (direction, other_name))
+
     with open(room_filename, 'w') as fobj:
         fobj.write('\n'.join(lines))
 
+def get_source_room_name(room_filename):
+    filename = os.path.basename(room_filename).split('.')[0]
+    name_parts = filename.split('_')
+    return get_symbol_name(name_parts)
+
 def add_room(room_name, location, template='default'):
+    source_room = None
+    if args.o and args.d:
+        source_room = get_source_room_name(args.o)
+
     folder_name = get_folder_name(room_name)
     full_path = os.path.join(location, folder_name)
     if os.path.isdir(full_path):
@@ -133,7 +154,7 @@ def add_room(room_name, location, template='default'):
     else:
         try: os.mkdir(full_path)
         except: print "Could not make path: %s" % full_path; exit()
-        render_template(room_name, full_path, template)
+        render_template(room_name, full_path, template, source_room)
 
     if args.o and args.d:
         add_backreference(args.o, room_name, args.d)

@@ -11,17 +11,14 @@
     roomDesc() {
         "The <<name>> room description";
     }
-
-    {% if door_direction %}out = {{ symbol_name }}Door
+    {% if source_room %}{% if door_direction %}out = {{ symbol_name }}Door
     {{ door_direction }} asExit(out){% endif %}
+    {% if exit_direction %}{{ exit_direction}} = {{ source_room }}{% endif %}{% endif %}
 ;
-
-+ {{ symbol_name }}Door : Door 'door' 'door'
-    "Door description"
-
-    masterObject = self
-;
-
+{% if door_direction %}
++ {{ symbol_name }}Door : Door '{{ door_direction }} door' '{{ door_direction }} door'
+    "Door description. "
+;{% endif %}
 /*
 
 + {{ symbol_name }}Window : SenseConnector, Fixture 'window' 'window'
