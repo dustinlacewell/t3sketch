@@ -5,11 +5,11 @@
 sharedQuarters: Room 'shared quarters'
 
     roomFirstDesc() {
-        "The room's initial description";
+        "The <<name>> room's initial description";
     }
 
     roomDesc() {
-        "The room description";
+        "The <<name>> room description";
     }
 
 ;

@@ -23,6 +23,6 @@ gameMain: GameMainDef {
 }
 
 me: Actor {
-    location = centerRoom
+    location = sharedQuarters
     posture = sitting
 }
