@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import os, fnmatch, sys
 from subprocess import check_output, CalledProcessError, call
 from argparse import ArgumentParser
