@@ -2,9 +2,9 @@
 #include <adv3.h>
 #include <en_us.h>
 
-class Hallway: Room
+class Hallway: BaseRoom
 
-    roomDesc() {
+    desc() {
         "The <<name>>'s walls are brightly lit.";
     }
 
