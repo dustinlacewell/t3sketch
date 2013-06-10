@@ -1,0 +1,26 @@
+#!/usr/bin/env python2
+from argparse import ArgumentParser
+from tadutils import *
+
+def get_parser():
+    parser = ArgumentParser(description='Create a new room')
+    parser.add_argument('room_name', nargs="*", help='name of the new room')
+    parser.add_argument('-s', help='filename of the source room')
+    parser.add_argument('-l', help='location of the new room')
+    parser.add_argument('-d', help='direction of the new room')
+    parser.add_argument('-c', help='class of the new room', default='Room')
+    parser.add_argument('-t', help='template to use', default='templates/rooms/default.tpl')
+
+    return parser
+
+parser = get_parser()
+args = parser.parse_args()
+
+if "__main__" == __name__:
+    if 'north-eastern' in [p.lower() for p in args.room_name]:
+        import pdb; pdb.set_trace()
+    create_room(
+        room_parts, args.l,
+        args.s, args.d, args.c,
+        args.t
+    )

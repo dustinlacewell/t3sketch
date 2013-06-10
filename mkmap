@@ -1,0 +1,233 @@
+#!/usr/bin/env python2
+import os
+from HTMLParser import HTMLParser
+from lxml import etree
+from argparse import ArgumentParser
+from subprocess import check_output
+
+from tadutils import *
+
+unescape = HTMLParser().unescape
+
+settings = {}
+required = ('area', 'defaultDoor', 'defaultWindow')
+
+class Node(object):
+    def __init__(self, node):
+        self.node = node
+        self.get_style()
+        self.pid = self.node.attrib['id']
+
+    def get_style(self):
+        self.style = {}
+        style = self.node.attrib['style']
+        pairs = style.split(';')
+        for pair in pairs:
+            parts = pair.split('=')
+            if len(parts) == 1:
+                self.style[parts[0]] = True
+            else:
+                self.style[parts[0]] = parts[1]
+
+class Room(Node):
+    def __init__(self, node):
+        super(Room, self).__init__(node)
+        self.file_path = None
+        self.get_name()
+        self.get_type()
+
+    def get_name(self):
+        self.name = self.node.attrib['value']
+
+    def get_type(self):
+        if 'ellipse' in self.style:
+            self.type = settings['ellipse']
+        elif 'rounded' in self.style:
+            self.type = settings['roundedBox']
+        else:
+            self.type = settings['basicBox']
+
+class Exit(Node):
+    def __init__(self, node):
+        super(Exit, self).__init__(node)
+        self.exit = node.attrib['source']
+        self.entry = node.attrib['target']
+        self.determine_direction()
+
+    def determine_direction(self):
+        x_exit = float(self.style['exitX'])
+        y_exit = float(self.style['exitY'])
+        x_entry = float(self.style['entryX'])
+        y_entry = float(self.style['entryY'])
+
+        if x_exit > .5:
+            x_dir = 'east'
+        elif x_exit < .5:
+            x_dir = 'west'
+        else:
+            x_dir = ''
+
+        if y_exit > .5:
+            y_dir = 'south'
+        elif y_exit < .5:
+            y_dir = 'north'
+        else:
+            y_dir = ''
+
+        self.exit_dir = y_dir + x_dir
+
+        if x_entry > .5:
+            x_dir = 'east'
+        elif x_entry < .5:
+            x_dir = 'west'
+        else:
+            x_dir = ''
+
+        if y_entry > .5:
+            y_dir = 'south'
+        elif y_entry < .5:
+            y_dir = 'north'
+        else:
+            y_dir = ''
+
+        self.entry_dir = y_dir + x_dir
+
+class Door(Exit):
+    def __init__(self, node):
+        super(Door, self).__init__(node)
+        self.type = node.attrib.get('value', '').strip() or settings['defaultDoor']
+
+class Window(Exit):
+    def __init__(self, node):
+        super(Window, self).__init__(node)
+        self.type = node.attrib.get('value', '').strip() or settings['defaultWindow']
+
+def get_parser():
+    parser = ArgumentParser(description='Build XML map')
+    parser.add_argument('map_file', nargs=1, help='filename of the XML map')
+    parser.add_argument('-l', help='location to render new area in')
+
+    return parser
+
+parser = get_parser()
+args = parser.parse_args()
+
+def parse_settings(rows):
+    for row in rows:
+        key, val = [n.text for n in row.xpath('td')]
+        settings[key] = val
+    return settings
+
+def find_settings(tree):
+    html_nodes = tree.xpath("*/mxCell[@vertex and contains(@style, 'html=1')]")
+    for node in html_nodes:
+        table_text = unescape(node.attrib['value'])
+        settings_tree = etree.fromstring(table_text)
+        rows = settings_tree.xpath('*/tr')
+        if len(rows):
+            header = rows[0].xpath('td')
+            if len(header):
+                if header[0].text.lower().strip() == 'settings':
+                    return parse_settings(rows[1:])
+
+def check_settings():
+    for setting in required:
+        if setting not in settings:
+            print "`%s` not set in settings. aborting." % setting
+            exit()
+    for roomtype in ('basicBox', 'roundedBox', 'ellipse'):
+        if roomtype not in settings:
+            settings[roomtype] = 'Room'
+
+def get_rooms(tree):
+    return [Room(e) for e in tree.xpath("*/mxCell[@vertex and not(contains(@style, 'html=1'))]")]
+
+def get_exits(tree):
+    return [Exit(e) for e in tree.xpath("*/mxCell[@edge and not(contains(@style, 'dashed')) and contains(@style, 'endArrow=none')]")]
+
+def get_doors(tree):
+    return [Door(e) for e in tree.xpath("*/mxCell[@edge and not(contains(@style, 'dashed')) and not(contains(@style, 'endArrow=none'))]")]
+
+def get_windows(tree):
+    return [Window(e) for e in tree.xpath("*/mxCell[@edge and contains(@style, 'dashed') and contains(@style, 'endArrow=none')]")]
+
+def build_rooms(rooms, area_path):
+    room_mapping = {}
+    for room in rooms:
+        path = create_room(room.name.split(), area_path, room_class=room.type)
+        room.file_path = path
+        room_mapping[room.pid] = room
+    return room_mapping
+
+def build_exits(exits, area_path, rooms):
+    for exit in exits:
+        create_exit(
+            rooms[exit.exit].file_path,
+            exit.exit_dir,
+            rooms[exit.entry].file_path,
+        )
+
+        create_exit(
+            rooms[exit.entry].file_path,
+            FLIPS[exit.exit_dir],
+            rooms[exit.exit].file_path,
+        )
+
+def build_doors(doors, area_path, rooms):
+    for door in doors:
+        create_master_door(
+            rooms[door.exit].file_path,
+            rooms[door.entry].file_path,
+            door.exit_dir,
+            door.type,
+        )
+
+        create_slave_door(
+            rooms[door.exit].file_path,
+            rooms[door.entry].file_path,
+            door.exit_dir,
+            door.type,
+        )
+
+def build_windows(windows, area_path, rooms):
+    for window in windows:
+        create_window(
+            rooms[window.exit].file_path,
+            rooms[window.entry].file_path,
+            window.type,
+        )
+
+def build_area(area_path, area_name):
+    full_path = os.path.join(
+        args.l, name_parts_to_folder_name(area_name.split())
+    )
+
+    try: mkdir(full_path)
+    except: pass
+    if not os.path.isdir(full_path):
+        print "Can't create new area at %s" % (full_path, )
+        exit()
+
+    return full_path
+
+def build_map(map_file):
+    tree = etree.parse(map_file)
+    find_settings(tree)
+    check_settings()
+    
+    area_path = build_area(args.l, settings['area'])
+
+    rooms = get_rooms(tree)
+    rooms = build_rooms(rooms, area_path)
+
+    exits = get_exits(tree)
+    build_exits(exits, area_path, rooms)
+
+    doors = get_doors(tree)
+    build_doors(doors, area_path, rooms)
+
+    # windows = get_windows(tree)
+    # build_windows(windows, area_path, rooms)
+
+if "__main__" == __name__:
+    build_map(args.map_file[0])

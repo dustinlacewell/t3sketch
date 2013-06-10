@@ -1,0 +1,19 @@
+#!/usr/bin/env python2
+from argparse import ArgumentParser
+from tadutils import *
+
+def get_parser():
+    parser = ArgumentParser(description='Create a new window connection')
+    parser.add_argument('-i', help='filename of the inside room')
+    parser.add_argument('-o', help='filename of the outside room')
+    parser.add_argument('-c', help='class of the new window', default='Window')
+    parser.add_argument('-t', help='template to use', default='templates/windows/default.tpl')
+    return parser
+
+parser = get_parser()
+args = parser.parse_args()
+
+if "__main__" == __name__:
+    create_window(
+        args.i, args.o, args.c, args.t
+    )

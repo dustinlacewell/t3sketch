@@ -1,0 +1,23 @@
+#!/usr/bin/env python2
+from argparse import ArgumentParser
+from tadutils import *
+
+def get_parser():
+    parser = ArgumentParser(description='Create a new room')
+    parser.add_argument('-i', help='filename of the inside room')
+    parser.add_argument('-d', help='direction from inside->outside')
+    parser.add_argument('-o', help='filename of the outside room')
+    parser.add_argument('-c', help='class of the new door', default='Door')
+    parser.add_argument('-t', help='template to use', default='templates/doors/default.tpl')
+    return parser
+
+parser = get_parser()
+args = parser.parse_args()
+
+if "__main__" == __name__:
+    create_master_door(
+        args.i, args.o, args.d, args.c, args.t
+    )
+    create_slave_door(
+        args.i, args.o, args.d, args.c, args.t
+    )
