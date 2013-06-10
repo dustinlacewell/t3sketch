@@ -1,0 +1,16 @@
+#!/usr/bin/env python2
+import os
+from argparse import ArgumentParser
+
+from t3sketch import *
+
+def get_parser():
+    parser = ArgumentParser(description='Initialize TADS3 project template')
+    parser.add_argument('dest', nargs=1, help='name of the new project folder', default='src')
+    return parser
+
+parser = get_parser()
+args = parser.parse_args()
+
+if "__main__" == __name__:
+    copy_example(args.dest[0])

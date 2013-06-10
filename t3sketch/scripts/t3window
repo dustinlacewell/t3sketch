@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 from argparse import ArgumentParser
-from tadutils import *
+from t3sketch import *
 
 def get_parser():
     parser = ArgumentParser(description='Create a new window connection')

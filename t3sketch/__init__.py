@@ -1,6 +1,6 @@
-import os
-
-from jinja2 import Environment
+import os, shutil
+from pkg_resources import Requirement, resource_filename
+from jinja2 import Environment, PackageLoader
 
 FLIPS = {
     'north': 'south',
@@ -19,6 +19,12 @@ def mkdir(path):
     except:
         print "Could not create path: %s" % path
         exit()
+
+def get_example_path():
+    return resource_filename(Requirement.parse("t3sketch"), "t3sketch/example/")
+
+def copy_example(dest):
+    shutil.copytree(get_example_path(), dest)
 
 def file_as_lines(filename):
     with open(filename, 'r') as fobj:

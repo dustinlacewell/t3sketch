@@ -5,7 +5,7 @@ from lxml import etree
 from argparse import ArgumentParser
 from subprocess import check_output
 
-from tadutils import *
+from t3sketch import *
 
 unescape = HTMLParser().unescape
 
