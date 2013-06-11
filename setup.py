@@ -36,8 +36,6 @@ def filesfrom(*pathparts):
 
 data_files = filesfrom('t3sketch', 'example')
 
-import pdb; pdb.set_trace()
-
 setup(
     name='t3sketch',
     version=VERSION,
