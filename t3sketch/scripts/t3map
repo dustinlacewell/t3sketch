@@ -194,6 +194,8 @@ def build_windows(windows, area_path, rooms):
         create_window(
             rooms[window.exit].file_path,
             rooms[window.entry].file_path,
+            window.exit_dir,
+            window.entry_dir,
             window.type,
         )
 
@@ -226,8 +228,8 @@ def build_map(map_file):
     doors = get_doors(tree)
     build_doors(doors, area_path, rooms)
 
-    # windows = get_windows(tree)
-    # build_windows(windows, area_path, rooms)
+    windows = get_windows(tree)
+    build_windows(windows, area_path, rooms)
 
 if "__main__" == __name__:
     build_map(args.map_file[0])

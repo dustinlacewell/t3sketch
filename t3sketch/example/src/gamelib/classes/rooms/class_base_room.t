@@ -7,6 +7,6 @@ class BaseRoom: Room
 
     extras() { 
         foreach(local cur in contents) 
-            cur.inRoomDesc; 
+            "<<cur.inRoomDesc>>"; 
     } 
 ;

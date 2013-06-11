@@ -2,7 +2,7 @@
 #include <adv3.h>
 #include <en_us.h>
 
-class Window: SenseConnector, Fixture
+class Window: Occluder, SenseConnector, Fixture
 
     dobjFor(LookThrough) {
         check() {
@@ -12,8 +12,7 @@ class Window: SenseConnector, Fixture
             }
         }
         action() {
-            "You peer into the <<otherLocation.name>>";
-            gActor.location.listRemoteContents(otherLocation);     
+            "You peer into the <<otherLocation.name>>. <<otherLocation.desc>>";
         }
     }   
 
@@ -39,17 +38,8 @@ class Window: SenseConnector, Fixture
     edge of the glass. 
     <<if connected>><<connectedDesc>><<else>><<disconnectedDesc>><<end>>"
 
-    name() {
-        if (connected())
-            return otherLocation.name + ' window';
-        return 'window';
-    }
-
-    vocabWords() {
-        if (connected()) {
-            return otherLocation.name + ' window';
-        }
-        return 'window';
+    inRoomDesc() {
+        return ' A <<getState.name>> provides a view into <<otherLocation.theName.toTitleCase>>.';
     }
 
     connectorMaterial = glass
@@ -57,5 +47,57 @@ class Window: SenseConnector, Fixture
     firstLocation = nil
     secondLocation = nil
 
+    occludeObj(obj, sense, pov) {
+        if (obj.isIn(pov.location)) {
+            return nil;
+        }
+        
+        if (obj.isIn(otherLocation)) {
+            if (obj.isApparent()) {
+                return nil;
+            }
+        }
+        return true;
+    }
+
 ;
 
+eastWindowState: ThingState
+  stateTokens = ['east', 'e']
+  name = 'east window'
+;
+
+westWindowState: ThingState
+   stateTokens = ['west', 'w']
+   name = 'west window'
+;
+
+northWindowState: ThingState
+  stateTokens = ['north', 'n']
+  name = 'north window'
+;
+
+southWindowState: ThingState
+   stateTokens = ['south', 's']
+   name = 'south window'
+;
+
+southwestWindowState: ThingState
+   stateTokens = ['southwest', 's']
+   name = 'southwest window'
+;
+
+southeastWindowState: ThingState
+  stateTokens = ['southeast', 'e']
+  name = 'southeast window'
+;
+
+northwestWindowState: ThingState
+   stateTokens = ['northwest', 'w']
+   name = 'northwest window'
+;
+
+northeastWindowState: ThingState
+  stateTokens = ['northeast', 'n']
+  name = 'northeast window'
+;

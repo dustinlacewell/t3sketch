@@ -246,7 +246,7 @@ def create_slave_door(inside_room, outside_room, direction, door_class='Door', t
         fobj.write('\n'.join(lines))
 
 # WINDOWS
-def create_window(inside_room, outside_room, direction, window_class='Window', template='templates/windows/default.tpl'):
+def create_window(inside_room, outside_room, direction, direction2=None, window_class='Window', template='templates/windows/default.tpl'):
     inside_symbol = filename_to_symbol_name(inside_room)
     outside_symbol = filename_to_symbol_name(outside_room)
     window_name = filenames_to_window_name(inside_room, outside_room)
@@ -257,6 +257,7 @@ def create_window(inside_room, outside_room, direction, window_class='Window', t
         'outside_symbol': outside_symbol,
         'window_class': window_class,
         'direction': direction,
+        'flipped_direction': direction2 or FLIPS[direction],
     }
 
     code = render_template(template, context)

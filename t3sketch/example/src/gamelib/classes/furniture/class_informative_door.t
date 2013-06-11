@@ -5,13 +5,13 @@
 doors: ListGroupSorted    
 ;
 
-class InformativeDoor: Door {
+class InformativeDoor: Apparent, Door {
     inRoomDesc() {
         local dest = getApparentDestination(gActor.location, gActor);
         if (dest || isOpen()) {
-            " \^<<theName>> <<if isOpen>>is open<<else>>is closed<<end>> and leads to <<destination.theName.toTitleCase>>. ";
+            return ' \^<<theName>> <<if isOpen>>is open<<else>>is closed<<end>> and leads to <<destination.theName.toTitleCase>>. ';
         } else {
-            " \^<<theName>> is closed.";
+            return ' \^<<theName>> is closed.';
         }
     }
 }
