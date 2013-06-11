@@ -26,7 +26,7 @@ Otherwise just find a place to clone it and install 'manually':
     $ cd t3sketch
     $ sudo python setup.py install
 
-*You're going to need [lxml](http://lxml.de/) installed on your system: 
+_You're going to need [lxml](http://lxml.de/) installed on your system:_
 
     $ sudo pip install lxml
 
@@ -69,7 +69,7 @@ Go ahead and use the `t3map -l <src dir> <mapxml>` command to turn `maps
 /living-quarters.xml` into corresponding TADS 3 source-code with all the Rooms
 and Doors implemented just as they are specified in the image above:
 
-***Note:** `t3map` must be run from inside the project directory.*
+_**Note:** `t3map` must be run from inside the project directory._
 
     $ cd sketch-test
     $ t3map -l src/ maps/living-quarters.xml
