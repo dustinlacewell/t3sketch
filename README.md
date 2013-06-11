@@ -12,3 +12,16 @@ created at http://draw.io/
 
 ![living-quarters.png](https://github.com/dustinlacewell/t3sketch/blob/master/t3sketch/example/maps/living-quarters.png?raw=true "example/maps/living-quarters.png")
 
+Installation
+------------
+
+If you have pip installed, you can simply:
+
+    $ sudo pip install -e git://github.com/dustinlacewell/t3sketch.git#egg=t3sketch
+
+Otherwise just find a place to clone it and install 'manually':
+
+    $ cd ~/src
+    $ git clone git://github.com/dustinlacewell/t3sketch.git
+    $ cd t3sketch
+    $ sudo python setup.py install
