@@ -41,7 +41,7 @@ Demonstration
 -------------
 
 Just to showcase what t3sketch can do, let's go ahead and try out the included
-example. First, create a new project with `**t3project** <foldername>`:
+example. First, create a new project with `t3project <foldername>`:
 
     $ cd ~/
     $ t3project sketch-test
@@ -65,7 +65,7 @@ contents:
 `the demo. src/main.t is the source-file containing the GameID, GameMainDef
 `and me objects required to build the TADS story.
 
-Go ahead and use the `**t3map** -l <src dir> <mapxml>` command to turn `maps
+Go ahead and use the `t3map -l <src dir> <mapxml>` command to turn `maps
 /living-quarters.xml` into corresponding TADS 3 source-code with all the Rooms
 and Doors implemented just as they are specified in the image above:
 
@@ -112,7 +112,7 @@ If we inspect some of the source, we can see all the boilerplate is there:
     ;
 
 Finally, to render out the TADS 3 makefile, build it and run the game in a
-single step use the `**t3build** [-b] [-r]` command:
+single step use the `t3build [-b] [-r]` command:
 
     $ t3build -br src/
     IFID = '22f8c17d-8282-4c55-8307-9de13ba33c31'
