@@ -75,7 +75,7 @@ def get_sources():
     matches = []
     for root, dirnames, filenames in os.walk(args.s):
       for filename in fnmatch.filter(filenames, '*.t'):
-          matches.append(os.path.join(root, filename))    
+          matches.append(os.path.join(root, filename))
     return matches
 
 def render_template(info, sources, html=False, debug=False):
@@ -99,7 +99,7 @@ def render_template(info, sources, html=False, debug=False):
         'debug_mode': debug,
     })
 
-    makefile = filename + '.t3m' 
+    makefile = filename + '.t3m'
     with open(makefile, 'w') as fobj:
         fobj.write(result)
     return makefile, gamefile
