@@ -8,21 +8,25 @@ BUILDPREFIX = './obj'
 
 def get_parser():
     parser = ArgumentParser(description='Build a TADS 3 story')
-    parser.add_argument('sourcedir', help='path containing tads3 code')
+    parser.add_argument('-s', help='path containing tads3 code', default='src')
     parser.add_argument('-b', help='build gamefile', action='store_true')
     parser.add_argument('-a', help='rebuild all objects', action='store_true')
     parser.add_argument('-w', help='host gamefile in browser', action='store_true')
     parser.add_argument('-r', help='run gamefile', action='store_true')
     parser.add_argument('-d', help='debug mode', action='store_true')
     parser.add_argument('-u', help='upload gamefile', action='store_true')
+    parser.add_argument('-D', help='output dir', default='build')
+    parser.add_argument('-H', help='build html version', action='store_true')
     return parser
+
 
 parser = get_parser()
 args = parser.parse_args()
 
+
 def get_template():
     return Environment().from_string("""
-    
+
 # {{ game_name }}
 # {{ game_author }}
 # {{ game_desc }}
@@ -31,23 +35,23 @@ def get_template():
 -d
 {% endif %}
 
--D "LANGUAGE=en_us" 
--D "MESSAGESTYLE=neu" 
+-D "LANGUAGE=en_us"
+-D "MESSAGESTYLE=neu"
 
 {% if html %}
 -D TADS_INCLUDE_NET
 {% endif %}
 
 -FC
--Fy "{% if html %}htmlobj{% else %}obj{% endif %}" 
--Fo "{% if html %}htmlobj{% else %}obj{% endif %}" 
+-Fy ""{% if build_dir %}{{build_dir}}{% endif %}{% if html %}htmlobj{% else %}obj{% endif %}"
+-Fo "{% if build_dir %}{{build_dir}}{% endif %}{% if html %}htmlobj{% else %}obj{% endif %}"
 
 # image file
--o bin/{{ gamefile }}
+-o {% if build_dir %}{{build_dir}}/{% endif %}bin/{{ gamefile }}
 
 -v
--statprefix <@> 
--statpct 
+-statprefix <@>
+-statpct
 
 -I /usr/local/share/frobtads/tads3/lib/
 
@@ -69,7 +73,7 @@ def get_template():
 
 def get_sources():
     matches = []
-    for root, dirnames, filenames in os.walk(args.sourcedir):
+    for root, dirnames, filenames in os.walk(args.s):
       for filename in fnmatch.filter(filenames, '*.t'):
           matches.append(os.path.join(root, filename))    
     return matches
@@ -103,7 +107,7 @@ def render_template(info, sources, html=False, debug=False):
 def find_version_info():
     version_info = {}
     try:
-        retval = check_output("grep -nr 'versionInfo' %s" % args.sourcedir, shell=True)
+        retval = check_output("grep -nr 'versionInfo' %s" % args.s, shell=True)
     except CalledProcessError as e:
         print e, e.args
     if retval and retval.count(':') >= 2:
@@ -171,14 +175,18 @@ def upload_gamefile(gamefile):
 if "__main__" == __name__:
     info = find_version_info()
 
+    os.makedirs(args.D)
     makefile, gamefile = render_makefile(info, debug=args.d, html=False)
-    html_makefile, html_gamefile = render_makefile(info, debug=args.d, html=True)
+    if args.H:
+        html_makefile, html_gamefile = render_makefile(info, debug=args.d, html=True)
 
     if args.b:
         print "Building makefile `%s`" % makefile
         build_makefile(makefile, all=args.a)
-        print "Building html makefile `%s`" % html_makefile
-        build_makefile(html_makefile, all=args.a)
+
+        if args.H:
+            print "Building html makefile `%s`" % html_makefile
+            build_makefile(html_makefile, all=args.a)
 
     if args.r:
         print "Running gamefile `bin/%s`" % gamefile
@@ -187,10 +195,10 @@ if "__main__" == __name__:
     if args.u:
         print "Uploading gamefile `bin/%s`" % gamefile
         upload_gamefile(gamefile)
+        if args.H:
+            print "Uploading html gamefile `bin/%s`" % html_gamefile
+            upload_gamefile(html_gamefile)
 
-        print "Uploading html gamefile `bin/%s`" % html_gamefile
-        upload_gamefile(html_gamefile)
-
-    if args.w:
+    if args.w and args.H:
         print "Hosting gamefile `bin/%s`" % html_gamefile
-        host_gamefile(html_gamefile)        
+        host_gamefile(html_gamefile)
