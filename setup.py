@@ -5,10 +5,6 @@ PROJECT = 't3sketch'
 # Change docs/sphinx/conf.py too!
 VERSION = '0.1'
 
-# Bootstrap installation of Distribute
-import distribute_setup
-distribute_setup.use_setuptools()
-
 from setuptools import setup, find_packages
 
 from distutils.util import convert_path
@@ -34,7 +30,6 @@ def filesfrom(*pathparts):
             files[root].append(os.path.join(root, file))
     return files.items()
 
-data_files = filesfrom('t3sketch', 'example')
 
 setup(
     name='t3sketch',
@@ -73,7 +68,6 @@ setup(
 
     provides=[],
     install_requires=[
-        'distribute>=dev', 
         'jinja2>=dev',
     ],
 
@@ -83,19 +77,6 @@ setup(
 
     namespace_packages=[],
     packages=find_packages(),
-    data_files = filesfrom('t3sketch', 'example'),
-    # entry_points={
-    #     'console_scripts': [
-    #         'improv = improv.cli:main'
-    #         ],
-    #     'improv.commands': [
-    #         'init = improv.commands.init:Init',
-    #         'apply = improv.commands.apply:Apply',
-    #         'osf = improv.commands.osf:OSF',
-    #         'test = improv.commands.test:Test',
-    #         'subtest = improv.commands.subtest:Subtest'
-    #         ],
-    #     },
-
+    include_package_data=True,
     zip_safe=False,
     )
