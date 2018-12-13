@@ -175,7 +175,9 @@ def upload_gamefile(gamefile):
 if "__main__" == __name__:
     info = find_version_info()
 
-    os.makedirs(args.D)
+    if not os.path.exists(args.D):
+        os.makedirs(args.D)
+
     makefile, gamefile = render_makefile(info, debug=args.d, html=False)
     if args.H:
         html_makefile, html_gamefile = render_makefile(info, debug=args.d, html=True)
